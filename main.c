@@ -56,7 +56,7 @@ int main(void) {
     // UART intialisieren
     uart_init(UART_BAUD_SELECT(UART_BAUD_RATE, F_CPU));
 
-    // UART benötigt Interrupts
+    // UART Library benötigt Interrupts
     sei();
 
     // Alle Pins sind Outputs
@@ -65,8 +65,8 @@ int main(void) {
     SET_OUTPUT(CWCWW_PIN);
     SET_OUTPUT(ENABLE_PIN);
 
-    // Halb Schritt Modus (HIGH)
-    SET_HIGH(HALFFULL_PIN);
+    // Voll Schritt Modus (LOW)
+    SET_LOW(HALFFULL_PIN);
 
     // Setze Clock auf HIGH für den Anfang
     SET_HIGH(CLOCK_PIN);
@@ -75,61 +75,53 @@ int main(void) {
         // Checke ob Bytes im Ringbuffer sind
         input = uart_getc();
 
-        if (input & UART_NO_DATA) {
-            // Nichts tun
-        } else if (input == RESET_STEPPER_CHAR) {
-            if (input & UART_FRAME_ERROR) uart_puts_P("UART Frame Error: ");
-            if (input & UART_OVERRUN_ERROR) uart_puts_P("UART Overrun Error: ");
-            if (input & UART_BUFFER_OVERFLOW) uart_puts_P("Buffer Overflow Error: ");
-
+        if (input & UART_NO_DATA) {} //Nichts tun
+        else if (input & UART_FRAME_ERROR) uart_puts_P("UART Frame Error: ");
+        else if (input & UART_OVERRUN_ERROR) uart_puts_P("UART Overrun Error: ");
+        else if (input & UART_BUFFER_OVERFLOW) uart_puts_P("Buffer Overflow Error: ");
+        else if (input == RESET_STEPPER_CHAR) {
             // Wenn ein '#' gesendet wird, resete den Schrittmotor
             setCounterClockWise();
             doSteps(cpuUsage);
             cpuUsage = 0;
-        } else {
-            if (input & UART_FRAME_ERROR) uart_puts_P("UART Frame Error: ");
-            if (input & UART_OVERRUN_ERROR) uart_puts_P("UART Overrun Error: ");
-            if (input & UART_BUFFER_OVERFLOW) uart_puts_P("Buffer Overflow Error: ");
+        }
+        else if (input == READ_TO_CHAR) {
+            // READ_TO_CHAR legt das Ende der Zahl fest
 
+            // Alte Auslastung wird vermerkt
+            oldCpuUsage = cpuUsage;
+
+            // Speichere die empfangene Auslastung als Integer
+            cpuUsage = atoi(buffer);
+
+            // Berechne die Anzahl der Schritte die der Motor machen muss
+            // alte CPU Auslastung + xSchritte = neue CPU Auslastung
+            steps = cpuUsage - oldCpuUsage;
+
+            // Sende die gemachten Schritte zurück
+            itoa(steps, output, 10);
+            uart_puts(output);
+            // Sende den READ_TO_CHAR
+            uart_putc('!');
+
+            if(steps > 0) {
+                // x Schritte im Uhrzeigersinn
+                setClockWise();
+                doSteps(steps);
+            }
+            else if (steps < 0) {
+                // x Schritte gegen den Uhrzeigersinn
+                setCounterClockWise();
+                doSteps(steps);
+            }
+
+            // Setze Buffer und Index zurück
+            memset(&buffer[0], 0, sizeof(buffer));
+            bufferIndex = 0;
+        }
+        else {
             // Speichere empfangenen Char im Buffer
             buffer[bufferIndex++] = input;
-
-            // READ_TO_CHAR legt das Ende der Zahl fest
-            if(input == READ_TO_CHAR) {
-                // Der READ_TO_CHAR im letzen Feld wird ignoriert
-                buffer[--bufferIndex] = 0;
-
-                // Alte Auslastung wird vermerkt
-                oldCpuUsage = cpuUsage;
-
-                // Speichere die empfangene Auslastung als Integer
-                cpuUsage = atoi(buffer);
-
-                // Berechne die Anzahl der Schritte die der Motor machen muss
-                // alte CPU Auslastung + xSchritte = neue CPU Auslastung
-                steps = cpuUsage - oldCpuUsage;
-
-                // Sende die gemachten Schritte zurück
-                itoa(steps, output, 10);
-                uart_puts(output);
-                // Sende den READ_TO_CHAR
-                uart_putc('!');
-
-                if(steps > 0) {
-                    // x Schritte im Uhrzeigersinn
-                    setClockWise();
-                    doSteps(steps);
-                } else if (steps < 0) {
-                    // x Schritte gegen den Uhrzeigersinn
-                    setCounterClockWise();
-                    doSteps(steps);
-                }
-                // Wenn es 0 Schritte sind mache nichts
-
-                // Setze Buffer und Index zurück
-                memset(&buffer[0], 0, sizeof(buffer));
-                bufferIndex = 0;
-            }
         }
     }
     return 0;
