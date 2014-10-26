@@ -22,8 +22,8 @@
 #define CLOCK_PIN          4
 #define CWCWW_PIN          5
 
-// Übersetzung: 360° entspricht 100% Auslastung
-#define STEP_FACTOR        4
+// Übersetzung: 360° (200 Schritte) entspricht 100% Auslastung
+#define STEP_FACTOR        2
 
 // Wenn dieser Char empfangen wird, ist der Buffer komplett und repräsentiert eine
 // Zahl von 1 bis 100
@@ -46,7 +46,7 @@ void setCounterClockWise(void);
 int main(void) {
     // Variablen
     unsigned int input;
-    char buffer[4],
+    char buffer[3],
          output[5];
     int bufferIndex = 0,
         cpuUsage    = 0,

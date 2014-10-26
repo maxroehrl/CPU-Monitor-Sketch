@@ -1,8 +1,8 @@
 # depslib dependency file v1.0
-1387550254 source:d:\arduino\cpu-monitor-sketch\fuse.c
+1387546654 source:d:\arduino\cpu-monitor-sketch\fuse.c
 	<avr/io.h>
 
-1414165907 source:d:\arduino\cpu-monitor-sketch\main.c
+1414326634 source:d:\arduino\cpu-monitor-sketch\main.c
 	<stdlib.h>
 	<string.h>
 	<avr/io.h>
@@ -11,9 +11,9 @@
 	<util/delay.h>
 	"uart.h"
 
-1353358346 d:\arduino\cpu-monitor-sketch\uart.h
+1353354746 d:\arduino\cpu-monitor-sketch\uart.h
 
-1370165224 source:d:\arduino\cpu-monitor-sketch\uart.c
+1370161624 source:d:\arduino\cpu-monitor-sketch\uart.c
 	<avr/io.h>
 	<avr/interrupt.h>
 	<avr/pgmspace.h>
