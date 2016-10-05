@@ -1,4 +1,4 @@
 CPU-Monitor-Sketch
 ==================
 
-The CodeBlocks project for the [CPU-Monitor C# programm](https://github.com/maxroehrl/CPU-Monitor)
+The CodeBlocks project required for the [CPU-Monitor .NET programm](https://github.com/maxroehrl/CPU-Monitor)
